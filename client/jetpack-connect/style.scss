@@ -897,8 +897,8 @@ body:not( .is-jetpack-sso-partner-branded--woo ) {
 }
 
 .jetpack-connect__sso-placeholder {
-	@include placeholder( --color-neutral-10 );
 	background-color: transparent;
+	@include placeholder( --color-neutral-10 );
 }
 
 .jetpack-connect__sso-placeholder a {
@@ -945,6 +945,9 @@ body:not( .is-jetpack-sso-partner-branded--woo ) {
 }
 
 .jetpack-connect__sso-partner-branded-email-notice {
+	width: 100%;
+	margin-bottom: 0;
+
 	&,
 	* {
 		all: revert-layer;
@@ -958,9 +961,6 @@ body:not( .is-jetpack-sso-partner-branded--woo ) {
 	:where( a, button, .components-button ):focus-visible {
 		all: revert-layer;
 	}
-
-	width: 100%;
-	margin-bottom: 0;
 }
 
 .jetpack-connect__sso-partner-branded-actions {
