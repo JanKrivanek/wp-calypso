@@ -96,7 +96,7 @@ function getCardHref(
 	renewNowUrl: string,
 	subscriptionsUrl: string | undefined,
 	siteSlug: string,
-	yearlyPlanSlug?: string
+	yearlyPlanUrl?: string
 ): string | undefined {
 	if ( cardId === 'change-plan' || cardId === 'upgrade-for-full-access' ) {
 		return changePlanUrl;
@@ -126,7 +126,7 @@ function getCardHref(
 		return dashboardLink( `/sites/${ siteSlug }/domains` );
 	}
 	if ( cardId === 'switch-to-yearly' ) {
-		return yearlyPlanSlug ? wpcomLink( `/checkout/${ siteSlug }/${ yearlyPlanSlug }` ) : undefined;
+		return yearlyPlanUrl;
 	}
 	return undefined;
 }
@@ -322,6 +322,12 @@ export default function SolutionsCardsUpsellStep( {
 	const subscriptionsUrl = wpcomLink(
 		`/purchases/subscriptions/${ purchase.site_slug }/${ purchase.ID }`
 	);
+	const yearlyPlanUrl = yearlyPlanSlug
+		? addQueryArgs( wpcomLink( `/checkout/${ purchase.site_slug }/${ yearlyPlanSlug }` ), {
+				redirect_to: dashboardLink( '/me/billing/purchases' ),
+				cancel_to: purchaseSettingsUrl,
+		  } )
+		: undefined;
 
 	const handleCardAction = ( solutionId: string ) => {
 		switch ( solutionId ) {
@@ -341,10 +347,8 @@ export default function SolutionsCardsUpsellStep( {
 				}
 				break;
 			case 'switch-to-yearly':
-				if ( yearlyPlanSlug ) {
-					window.location.href = wpcomLink(
-						`/checkout/${ purchase.site_slug }/${ yearlyPlanSlug }`
-					);
+				if ( yearlyPlanUrl ) {
+					window.location.href = yearlyPlanUrl;
 				}
 				break;
 			case 'speak-with-support': {
@@ -430,7 +434,7 @@ export default function SolutionsCardsUpsellStep( {
 						renewNowUrl,
 						subscriptionsUrl,
 						purchase.site_slug,
-						yearlyPlanSlug
+						yearlyPlanUrl
 					);
 					const onClick = getCardOnClick( card.id, hasAction, handleCardAction );
 					const title = getCardTitle( card.id );
