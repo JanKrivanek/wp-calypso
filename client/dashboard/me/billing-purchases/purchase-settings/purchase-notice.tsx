@@ -48,7 +48,7 @@ import type { Purchase } from '@automattic/api-core';
 export function PurchaseNotice( { purchase }: { purchase: Purchase } ) {
 	const { user } = useAuth();
 	const isSplitCancelRemoveEnabled = useIsSplitCancelRemoveEnabled();
-	const { refunded, upgraded, cancelled } = purchaseSettingsRoute.useSearch();
+	const { refunded, upgraded, cancelled, downgraded } = purchaseSettingsRoute.useSearch();
 	const navigate = purchaseSettingsRoute.useNavigate();
 	// Show the transient cancelled success notice once after a cancel redirects
 	// here. The URL search param is cleared immediately so that a refresh / back
@@ -65,6 +65,18 @@ export function PurchaseNotice( { purchase }: { purchase: Purchase } ) {
 			} );
 		}
 	}, [ cancelled, navigate ] );
+	const [ showDowngradedNotice, setShowDowngradedNotice ] = useState( Boolean( downgraded ) );
+	useEffect( () => {
+		if ( downgraded ) {
+			navigate( {
+				search: ( prev: Record< string, unknown > ) => {
+					const { downgraded: _downgraded, ...rest } = prev;
+					return rest;
+				},
+				replace: true,
+			} );
+		}
+	}, [ downgraded, navigate ] );
 	const { data: purchaseAttachedTo } = useQuery( {
 		...purchaseQuery( purchase.attached_to_purchase_id ?? 0 ),
 		enabled: Boolean( purchase.attached_to_purchase_id ),
@@ -117,6 +129,14 @@ export function PurchaseNotice( { purchase }: { purchase: Purchase } ) {
 				purchase={ purchase }
 				onClose={ () => setShowCancelledNotice( false ) }
 			/>
+		);
+	}
+
+	if ( showDowngradedNotice ) {
+		return (
+			<Notice variant="success" onClose={ () => setShowDowngradedNotice( false ) }>
+				{ __( 'You\u2019ve switched to monthly billing.' ) }
+			</Notice>
 		);
 	}
 

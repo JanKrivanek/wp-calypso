@@ -109,6 +109,9 @@ class PurchaseNotice extends Component<
 		showCancelledRedirectNotice:
 			typeof window !== 'undefined' &&
 			new URLSearchParams( window.location.search ).get( 'cancelled' ) === 'true',
+		showDowngradedRedirectNotice:
+			typeof window !== 'undefined' &&
+			new URLSearchParams( window.location.search ).get( 'downgraded' ) === 'true',
 	};
 
 	componentDidMount() {
@@ -116,8 +119,16 @@ class PurchaseNotice extends Component<
 			return;
 		}
 		const params = new URLSearchParams( window.location.search );
+		let changed = false;
 		if ( params.get( 'cancelled' ) === 'true' ) {
 			params.delete( 'cancelled' );
+			changed = true;
+		}
+		if ( params.get( 'downgraded' ) === 'true' ) {
+			params.delete( 'downgraded' );
+			changed = true;
+		}
+		if ( changed ) {
 			const newSearch = params.toString();
 			const newUrl =
 				window.location.pathname + ( newSearch ? '?' + newSearch : '' ) + window.location.hash;
@@ -127,6 +138,10 @@ class PurchaseNotice extends Component<
 
 	dismissCancelledRedirectNotice = () => {
 		this.setState( { showCancelledRedirectNotice: false } );
+	};
+
+	dismissDowngradedRedirectNotice = () => {
+		this.setState( { showDowngradedRedirectNotice: false } );
 	};
 
 	/**
@@ -181,6 +196,21 @@ class PurchaseNotice extends Component<
 				onDismissClick={ this.dismissCancelledRedirectNotice }
 				status="is-success"
 				text={ noticeText }
+			/>
+		);
+	}
+
+	renderDowngradedRedirectNotice() {
+		if ( ! this.state.showDowngradedRedirectNotice ) {
+			return null;
+		}
+		return (
+			<Notice
+				className="manage-purchase__purchase-expiring-notice"
+				showDismiss
+				onDismissClick={ this.dismissDowngradedRedirectNotice }
+				status="is-success"
+				text={ this.props.translate( 'You\u2019ve switched to monthly billing.' ) }
 			/>
 		);
 	}
@@ -1359,6 +1389,11 @@ class PurchaseNotice extends Component<
 		const cancelledRedirectNotice = this.renderCancelledRedirectNotice();
 		if ( cancelledRedirectNotice ) {
 			return cancelledRedirectNotice;
+		}
+
+		const downgradedRedirectNotice = this.renderDowngradedRedirectNotice();
+		if ( downgradedRedirectNotice ) {
+			return downgradedRedirectNotice;
 		}
 
 		if ( purchase.asyncPendingPaymentBlockIsSet ) {
