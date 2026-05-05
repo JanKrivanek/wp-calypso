@@ -59,6 +59,7 @@ import PageViewTracker from 'calypso/lib/analytics/page-view-tracker';
 import { decodeEntities } from 'calypso/lib/formatting';
 import { PerformanceTrackerStop } from 'calypso/lib/performance-tracking';
 import { ReviewsSummary } from 'calypso/my-sites/marketplace/components/reviews-summary';
+import ActivationModal from 'calypso/my-sites/themes/activation-modal';
 import { localizeThemesPath, shouldSelectSite } from 'calypso/my-sites/themes/helpers';
 import { connectOptions } from 'calypso/my-sites/themes/theme-options';
 import ThemePreview from 'calypso/my-sites/themes/theme-preview';
@@ -210,6 +211,7 @@ class ThemeSheet extends Component {
 		isRedirectingToEditorWebPreview: false,
 		isReviewsModalVisible: false,
 		isSiteSelectorModalVisible: false,
+		isActivationModalVisible: false,
 		isWide: isWithinBreakpoint( '>960px' ),
 	};
 
@@ -330,8 +332,23 @@ class ThemeSheet extends Component {
 			return;
 		}
 
+		// Intercept activation so the user can preview the new theme and choose
+		// between a basic and a full setup. Skip the modal on Jetpack/Atomic
+		// sites where the full-setup path (theme-setup) doesn't apply, leaving
+		// only one effective choice.
+		const { isAtomic, isStandaloneJetpack } = this.props;
+		if ( this.props.defaultOption?.key === 'activate' && ! isAtomic && ! isStandaloneJetpack ) {
+			event?.preventDefault();
+			this.setState( { isActivationModalVisible: true } );
+			return;
+		}
+
 		this.onBeforeOptionAction();
 		this.props.defaultOption.action?.( this.props.themeId );
+	};
+
+	closeActivationModal = () => {
+		this.setState( { isActivationModalVisible: false } );
 	};
 
 	onUnlockStyleButtonClick = () => {
@@ -1319,6 +1336,15 @@ class ThemeSheet extends Component {
 					/>
 				) }
 				<EligibilityWarningModal />
+				{ this.state.isActivationModalVisible && (
+					<ActivationModal
+						themeId={ themeId }
+						siteId={ siteId }
+						source="details"
+						styleVariation={ this.getSelectedStyleVariation() }
+						onClose={ this.closeActivationModal }
+					/>
+				) }
 			</Main>
 		);
 	};
