@@ -267,7 +267,15 @@ export const purchaseSettingsRoute = createRoute( {
 	path: '$purchaseId',
 	validateSearch: (
 		search
-	): { refunded?: true; upgraded?: true; cancelled?: true; downgraded?: true } => {
+	): {
+		refunded?: true;
+		upgraded?: true;
+		cancelled?: true;
+		downgraded?: true;
+		plan?: string;
+		refund?: string;
+		currency?: string;
+	} => {
 		const isRefunded = search.refunded === true || search.refunded === 'true';
 		const isUpgraded = search.upgraded === true || search.upgraded === 'true';
 		const isCancelled = search.cancelled === true || search.cancelled === 'true';
@@ -277,6 +285,9 @@ export const purchaseSettingsRoute = createRoute( {
 			...( isUpgraded ? { upgraded: true } : {} ),
 			...( isCancelled ? { cancelled: true } : {} ),
 			...( isDowngraded ? { downgraded: true } : {} ),
+			...( typeof search.plan === 'string' ? { plan: search.plan } : {} ),
+			...( typeof search.refund === 'string' ? { refund: search.refund } : {} ),
+			...( typeof search.currency === 'string' ? { currency: search.currency } : {} ),
 		};
 	},
 } );

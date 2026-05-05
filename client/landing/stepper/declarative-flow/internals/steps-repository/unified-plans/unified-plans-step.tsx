@@ -446,6 +446,10 @@ function UnifiedPlansStep( {
 			return translate( 'Pick a plan for your store' );
 		}
 
+		if ( intent === 'plans-switch' ) {
+			return translate( 'Switch your plan' );
+		}
+
 		return translate( 'There’s a plan for you' );
 	};
 
@@ -524,6 +528,10 @@ function UnifiedPlansStep( {
 			return translate(
 				'All plans come with WooCommerce. Pick the level of support and features you want.'
 			);
+		}
+
+		if ( intent === 'plans-switch' ) {
+			return translate( 'Find a plan that fits where your site is heading.' );
 		}
 
 		if ( useEmailOnboardingSubheader ) {
