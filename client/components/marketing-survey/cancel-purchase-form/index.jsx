@@ -84,6 +84,7 @@ class CancelPurchaseForm extends Component {
 		cancellationInProgress: PropTypes.bool,
 		intent: PropTypes.string,
 		purchaseSettingsUrl: PropTypes.string,
+		onSwitchToMonthly: PropTypes.func,
 	};
 
 	static defaultProps = {
