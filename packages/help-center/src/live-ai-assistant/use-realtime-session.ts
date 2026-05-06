@@ -69,6 +69,11 @@ import {
 	undoToolDefinition,
 } from './tools/editor-post-tool';
 import {
+	GENERATE_IMAGE_TOOL_NAME,
+	executeGenerateImageTool,
+	generateImageToolDefinition,
+} from './tools/generate-image-tool';
+import {
 	PICK_IMAGE_TOOL_NAME,
 	executePickImageTool,
 	pickImageToolDefinition,
@@ -100,7 +105,7 @@ export interface RealtimeTranscriptEntry {
 export interface RealtimeToolEvent {
 	id: string;
 	label: string;
-	status: 'done' | 'error';
+	status: 'running' | 'done' | 'error';
 	timestamp: number;
 }
 
@@ -297,6 +302,19 @@ function describeToolCall(
 				return `${ errorPrefix }Opened upload prompt`;
 			}
 			return `${ errorPrefix }Image picker`;
+		}
+		case GENERATE_IMAGE_TOOL_NAME: {
+			if ( ! ok ) {
+				const errorText =
+					isObjectResult && typeof ( result as { error?: unknown } ).error === 'string'
+						? ( result as { error: string } ).error
+						: null;
+				if ( errorText && /quota|exceeded|rate.?limit/i.test( errorText ) ) {
+					return "I couldn't generate the image — your AI quota is exhausted.";
+				}
+				return "I couldn't generate the image.";
+			}
+			return 'Generated image';
 		}
 		default:
 			return null;
@@ -529,6 +547,28 @@ export function useRealtimeSession( options: UseRealtimeSessionOptions ): UseRea
 					result = await executeVerifyYoutubeUrlTool( call.arguments );
 				} else if ( call.name === PICK_IMAGE_TOOL_NAME ) {
 					result = await executePickImageTool( call.arguments );
+				} else if ( call.name === GENERATE_IMAGE_TOOL_NAME ) {
+					// Image generation can take 30-60s; surface a "running" event so
+					// the user sees something is happening instead of a frozen panel.
+					const runningEventId = call.call_id;
+					setToolEvents( ( prev ) => {
+						const next = prev.concat( {
+							id: runningEventId,
+							label: 'Generating image…',
+							status: 'running',
+							timestamp: Date.now(),
+						} );
+						return next.length > MAX_TOOL_EVENTS
+							? next.slice( next.length - MAX_TOOL_EVENTS )
+							: next;
+					} );
+					try {
+						result = await executeGenerateImageTool( call.arguments );
+					} finally {
+						// Drop the running stub; the post-loop block below appends the
+						// final done/error event with the real label.
+						setToolEvents( ( prev ) => prev.filter( ( e ) => e.id !== runningEventId ) );
+					}
 				} else {
 					continue;
 				}
@@ -748,6 +788,7 @@ export function useRealtimeSession( options: UseRealtimeSessionOptions ): UseRea
 								getPostInfoToolDefinition,
 								verifyYoutubeUrlToolDefinition,
 								pickImageToolDefinition,
+								generateImageToolDefinition,
 							],
 							tool_choice: 'auto',
 							audio: {
