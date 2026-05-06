@@ -60,6 +60,7 @@ export interface CancelPurchaseButtonProps {
 	// Methods from parent component
 	downgradeClick: ( upsell: string ) => void;
 	freeMonthOfferClick: () => void;
+	onSwitchToMonthly?: () => void;
 	// Control marketplace dialog visibility
 	showMarketplaceDialog?: boolean;
 }
@@ -211,6 +212,7 @@ class CancelPurchaseButton extends Component<
 						onSurveyComplete={ this.handleSurveyComplete }
 						downgradeClick={ this.props.downgradeClick }
 						freeMonthOfferClick={ this.props.freeMonthOfferClick }
+						onSwitchToMonthly={ this.props.onSwitchToMonthly }
 						flowType={ flowType }
 						cancelBundledDomain={ cancelBundledDomain }
 						includedDomainPurchase={ includedDomainPurchase }
