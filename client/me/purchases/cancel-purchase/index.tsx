@@ -1193,6 +1193,10 @@ class CancelPurchase extends Component< CancelPurchaseAllProps, CancelPurchaseSt
 						freeMonthOfferClick={ this.freeMonthOfferClick }
 						onSwitchToMonthly={ this.onSwitchToMonthly }
 						intent={ this.props.intent }
+						purchaseSettingsUrl={ ( this.props.getManagePurchaseUrlFor ?? managePurchase )(
+							this.props.siteSlug,
+							this.props.purchaseId
+						) }
 					/>
 				) }
 				<Card className="cancel-purchase__wrapper-card">
