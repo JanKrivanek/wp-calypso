@@ -81,20 +81,15 @@ module.exports = function storybookDefaultConfig( {
 				{
 					test: /\.scss$/,
 					use: [
-						'style-loader', // Injects styles into the DOM
-						'css-loader', // Translates CSS into CommonJS
+						require.resolve( 'style-loader' ), // Injects styles into the DOM
+						require.resolve( 'css-loader' ), // Translates CSS into CommonJS
 						{
-							loader: 'sass-loader', // Compiles Sass to CSS
+							loader: require.resolve( 'sass-loader' ), // Compiles Sass to CSS
 							options: {
+								api: 'modern',
 								sassOptions: {
 									quietDeps: true,
-									silenceDeprecations: [
-										'legacy-js-api',
-										'import',
-										'global-builtin',
-										'color-functions',
-										'slash-div',
-									],
+									silenceDeprecations: [ 'mixed-decls' ],
 								},
 							},
 						},

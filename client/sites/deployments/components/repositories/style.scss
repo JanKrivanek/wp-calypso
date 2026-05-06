@@ -52,10 +52,6 @@
 }
 
 .github-repositories-list {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-
 	&-permissions-notice {
 		margin-top: auto;
 	}
@@ -67,6 +63,10 @@
 			margin-top: initial;
 		}
 	}
+
+	display: flex;
+	flex-direction: column;
+	flex: 1;
 }
 
 .github-deployments-repository-list-table {
