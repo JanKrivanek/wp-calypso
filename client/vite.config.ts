@@ -49,9 +49,16 @@ const ENTRYPOINTS: Record< string, string > = {
  */
 const sassPackageImporter = {
 	findFileUrl( url: string ): URL | null {
+		// Support webpack-style Sass imports without forcing source SCSS churn.
+		url = url.replace( /^~/, '' );
+
 		// Only intercept bare package specifiers; relative/absolute paths are fine.
 		if ( url.startsWith( '.' ) || url.startsWith( '/' ) || url.startsWith( 'file:' ) ) {
 			return null;
+		}
+
+		if ( url === 'calypso' || url.startsWith( 'calypso/' ) ) {
+			return findSassFile( path.join( __dirname, url.slice( 'calypso/'.length ) ) );
 		}
 
 		// Split into <pkgName> + <subpath>.
@@ -102,6 +109,30 @@ const sassPackageImporter = {
 		return null;
 	},
 };
+
+function findSassFile( basePath: string ): URL | null {
+	const baseName = path.basename( basePath );
+	const dirName = path.dirname( basePath );
+	const candidates = path.extname( basePath )
+		? [ basePath ]
+		: [
+				basePath + '.scss',
+				basePath + '.sass',
+				basePath + '.css',
+				path.join( dirName, '_' + baseName + '.scss' ),
+				path.join( dirName, '_' + baseName + '.sass' ),
+				path.join( basePath, '_index.scss' ),
+				path.join( basePath, 'index.scss' ),
+		  ];
+
+	for ( const candidate of candidates ) {
+		if ( fs.existsSync( candidate ) ) {
+			return pathToFileURL( fs.realpathSync( candidate ) );
+		}
+	}
+
+	return null;
+}
 
 // @automattic/react-virtualized currently publishes JSX in .js files.
 // Keep this scoped transform until the package ships parseable JS or .jsx files.
